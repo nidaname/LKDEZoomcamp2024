@@ -5,7 +5,7 @@
 *.parquet
 
 */pgadmin_data/
-*/nytaxi_postgres_db/
+**/*_db/
 
 commands.txt
 
