@@ -19,41 +19,39 @@ path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 
 execution_month = '{{ execution_date.strftime(\'%Y-%m\') }}'
 
-URL_PREFIX = 'https://s3.amazonaws.com/nyc-tlc/trip+data'
+URL_PREFIX = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
 
-yellow_taxi_file_name = f'yellow_trip_data_{execution_month}.csv'
-yellow_taxi_parquet_file_name = yellow_taxi_file_name.replace('.csv', '.parquet')
+yellow_taxi_file_name = f'yellow_tripdata_{execution_month}.csv.gz'
+yellow_taxi_parquet_file_name = yellow_taxi_file_name.replace('.csv.gz', '.parquet')
 
 yellow_taxi_file_local = path_to_local_home + yellow_taxi_file_name
-# yellow_taxi_url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/{yellow_taxi_file_name}'
-yellow_taxi_url = URL_PREFIX + yellow_taxi_file_name
+yellow_taxi_url = URL_PREFIX + "yellow/" + yellow_taxi_file_name
 yellow_taxi_parquet_file_local = path_to_local_home + yellow_taxi_parquet_file_name
-yellow_taxi_gcs_file = f'raw/yellow_taxi/{execution_month}/{yellow_taxi_parquet_file_name}'
+yellow_taxi_gcs_file = f'raw/yellow_taxi/{yellow_taxi_parquet_file_name}'
 
 
-green_taxi_file_name = f'green_trip_data_{execution_month}.csv'
-green_taxi_parquet_file_name = green_taxi_file_name.replace('.csv', '.parquet')
+green_taxi_file_name = f'green_tripdata_{execution_month}.csv.gz'
+green_taxi_parquet_file_name = green_taxi_file_name.replace('.csv.gz', '.parquet')
 
 green_taxi_file_local = path_to_local_home + green_taxi_file_name
-# green_taxi_url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/{green_taxi_file_name}'
-green_taxi_url = URL_PREFIX + green_taxi_file_name
+green_taxi_url = URL_PREFIX + "green/" + green_taxi_file_name
 green_taxi_parquet_file_local = path_to_local_home + green_taxi_parquet_file_name
-green_taxi_gcs_file = f'raw/green_taxi/{execution_month}/{green_taxi_parquet_file_name}'
+green_taxi_gcs_file = f'raw/green_taxi/{green_taxi_parquet_file_name}'
 
-fhv_taxi_file_name = f'fhv_trip_data_{execution_month}.csv'
-fhv_taxi_parquet_file_name = fhv_taxi_file_name.replace('.csv', '.parquet')
+fhv_taxi_file_name = f'fhv_tripdata_{execution_month}.csv.gz'
+fhv_taxi_parquet_file_name = fhv_taxi_file_name.replace('.csv.gz', '.parquet')
 
 fhv_taxi_file_local = path_to_local_home + fhv_taxi_file_name
-# fhv_taxi_url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/{fhv_taxi_file_name}'
-fhv_taxi_url = URL_PREFIX + fhv_taxi_file_name
-fhv_taxi_parquet_file_local = path_to_local_home + fhv_taxi_parquet_file_name
-fhv_taxi_gcs_file = f'raw/fhv_taxi/{execution_month}/{fhv_taxi_parquet_file_name}'
 
-zones_file_name = 'taxi+_zone_lookup.csv'
+fhv_taxi_url = URL_PREFIX + "fhv/" + fhv_taxi_file_name
+fhv_taxi_parquet_file_local = path_to_local_home + fhv_taxi_parquet_file_name
+fhv_taxi_gcs_file = f'raw/fhv_taxi/{fhv_taxi_parquet_file_name}'
+
+zones_file_name = 'taxi_zone_lookup.csv'
 zones_parquet_file_name = zones_file_name.replace('.csv', '.parquet')
 
 zones_file_local = path_to_local_home + zones_file_name
-zones_url = f'https://s3.amazonaws.com/nyc-tlc/misc/{zones_file_name}'
+zones_url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/{zones_file_name}'
 zones_parquet_file_local = path_to_local_home + zones_parquet_file_name
 zones_gcs_file = f'raw/zones/{zones_parquet_file_name}'
 
@@ -69,7 +67,7 @@ def format_to_parquet(src_file, dest_file):
     
 # def format_to_parquet(src_file, dest_file):
 #     if src_file.endswith('.csv') or src_file.endswith('.csv.gz'):
-#         table = pd.read_csv(src_file)
+#         table = pd.read_csv(src_file, compression="gzip", sep=',')
 #         table.to_parquet(dest_file)
 #     else:
 #         logging.error("Can only accept source files in CSV format, for the moment")
@@ -102,7 +100,7 @@ def download_format_upload_gcs_dag(dag, dataset_url, dataset_file_local, parquet
     with dag:
         download_dataset_task = BashOperator(
             task_id="download_dataset_task",
-            bash_command=f"curl -sSL {dataset_url} > {dataset_file_local}"
+            bash_command=f"curl -sSLf {dataset_url} > {dataset_file_local}"
         )
 
         format_to_parquet_task = PythonOperator(
@@ -156,8 +154,8 @@ fhv_taxi_data_dag = DAG(
     dag_id = "fhv_taxi_data_dag_v1",
     schedule_interval = "0 7 2 * *",
     default_args = default_args,
-    start_date=datetime(2019, 1, 1),
-    end_date=datetime(2020, 1, 1),
+    start_date=datetime(2020, 1, 1),
+    end_date=datetime(2021, 1, 1),
     catchup = True,
     max_active_runs = 1,
     tags=['dtc-de'],
@@ -177,3 +175,16 @@ zones_data_dag = DAG(
 )
 
 download_format_upload_gcs_dag(zones_data_dag, zones_url, zones_file_local, zones_parquet_file_local, zones_gcs_file)
+
+green_taxi_data_dag = DAG(
+    dag_id = "green_taxi_data_dag_v1",
+    schedule_interval = "0 10 2 * *",
+    default_args = default_args,
+    start_date=datetime(2022, 1, 1),
+    end_date=datetime(2023, 1, 1),
+    catchup = True,
+    max_active_runs = 1,
+    tags=['dtc-de'],
+)
+
+download_format_upload_gcs_dag(green_taxi_data_dag, green_taxi_url, green_taxi_file_local, green_taxi_parquet_file_local, green_taxi_gcs_file)
