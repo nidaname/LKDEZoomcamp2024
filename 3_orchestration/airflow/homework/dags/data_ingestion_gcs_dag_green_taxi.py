@@ -25,7 +25,7 @@ green_taxi_parquet_file_name = f'green_tripdata_{execution_month}.parquet'
 
 green_taxi_url = URL_PREFIX + green_taxi_parquet_file_name
 green_taxi_parquet_file_local = path_to_local_home + green_taxi_parquet_file_name
-green_taxi_gcs_file = f'green/monthly/{green_taxi_parquet_file_name}'
+green_taxi_gcs_file = f'raw/green_taxi/{green_taxi_parquet_file_name}'
 
 def upload_to_gcs(bucket, object_name, local_file):
     """
@@ -83,8 +83,8 @@ green_taxi_data_dag = DAG(
     dag_id = "green_taxi_data_monthly_dag_v1",
     schedule_interval = "0 10 2 * *",
     default_args = default_args,
-    start_date=datetime(2022, 1, 1),
-    end_date=datetime(2023, 1, 1),
+    start_date=datetime(2019, 1, 1),
+    end_date=datetime(2021, 1, 1),
     catchup = True,
     max_active_runs = 1,
     tags=['dtc-de'],

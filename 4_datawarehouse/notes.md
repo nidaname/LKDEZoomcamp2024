@@ -16,8 +16,9 @@ to self
 - used `kwargs.execution_date.strftime('%Y-%m')`
 - loaded to gcs
 
-can be done in a similar way using airflow
+# can be done in a similar way using airflow
 
 - tried with gzip files in `https://github.com/DataTalksClub/nyc-tlc-data/releases`
 - yellow trip data is too large for `pd.read_parquet` and `df.to_parquet`
 - using `pyarrow.csv.read_csv` with `pyarrow.parquet.write_table` works
+- fhv 2019 is ~200mb which sigterms the airflow run
