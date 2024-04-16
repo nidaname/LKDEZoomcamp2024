@@ -222,3 +222,6 @@ scratch*
 *.json
 
 **/logs/** 
+
+spark/*
+**/data/** 
