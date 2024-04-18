@@ -225,3 +225,4 @@ scratch*
 
 spark/*
 **/data/** 
+google-cloud-sdk
